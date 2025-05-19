@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  rd-sync:
+    image: yourusername/realdebrid-sync:latest
+    environment:
+      - RD_TOKEN=PUT_YOUR_REAL_DEBRID_TOKEN_HERE
+    volumes:
+      - rd-downloads:/downloads
+    restart: unless-stopped
+
+  samba:
+    image: dperson/samba
+    container_name: samba-server
+    restart: unless-stopped
+    ports:
+      - "139:139"
+      - "445:445"
+    volumes:
+      - rd-downloads:/mount
+    command: >
+      -s "media;/mount;yes;no;yes"
+      -u "guest;password"
+
+volumes:
+  rd-downloads:
