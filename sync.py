@@ -1,5 +1,3 @@
-# sync.py
-
 import os
 import requests
 
@@ -11,18 +9,21 @@ HEADERS = {
 }
 
 def list_files():
-    response = requests.get("https://api.real-debrid.com/rest/1.0/streams", headers=HEADERS)
+    # Correct endpoint to list downloaded files on Real-Debrid
+    response = requests.get("https://api.real-debrid.com/rest/1.0/downloads", headers=HEADERS)
     response.raise_for_status()
     return response.json()
 
-def get_file_info(stream_id):
-    response = requests.get(f"https://api.real-debrid.com/rest/1.0/streaming/transcode/{stream_id}", headers=HEADERS)
+def get_file_info(download_id):
+    # Updated endpoint to get info about a specific download
+    response = requests.get(f"https://api.real-debrid.com/rest/1.0/downloads/{download_id}", headers=HEADERS)
     response.raise_for_status()
     return response.json()
 
 def download_file(file_info):
-    filename = file_info.get("filename", "unknown")
-    url = file_info.get("streamingUrl") or file_info.get("download")
+    filename = file_info.get("filename") or "unknown"
+    # Use 'link' key from RD's download info for direct download URL
+    url = file_info.get("link")
 
     if not url:
         print(f"⚠️ No URL for {filename}")
@@ -43,17 +44,17 @@ def download_file(file_info):
 
 def main():
     print("🔄 Syncing Real-Debrid cloud files...")
-    files = list_files()
+    downloads = list_files()
 
-    for f in files:
-        stream_id = f.get("id")
-        if not stream_id:
+    for download in downloads:
+        download_id = download.get("id")
+        if not download_id:
             continue
         try:
-            file_info = get_file_info(stream_id)
+            file_info = get_file_info(download_id)
             download_file(file_info)
         except Exception as e:
-            print(f"❌ Error with stream {stream_id}: {e}")
+            print(f"❌ Error with download {download_id}: {e}")
 
 if __name__ == "__main__":
     main()
