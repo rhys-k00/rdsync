@@ -4,7 +4,7 @@ services:
   rd-sync:
     image: yourusername/realdebrid-sync:latest
     environment:
-      - RD_TOKEN=PUT_YOUR_REAL_DEBRID_TOKEN_HERE
+      - RD_TOKEN=CX5MGXRZ73PRUUSSLDN3C4V4MNFRLNWXNIYTHXNNFEHPKKUKZMTQ
     volumes:
       - rd-downloads:/downloads
     restart: unless-stopped
