@@ -9,14 +9,12 @@ HEADERS = {
 }
 
 def list_files():
-    url = "https://api.real-debrid.com/rest/1.0/downloads"
-    response = requests.get(url, headers=HEADERS)
+    response = requests.get("https://api.real-debrid.com/rest/1.0/downloads", headers=HEADERS)
     response.raise_for_status()
     return response.json()
 
 def get_file_info(download_id):
-    url = f"https://api.real-debrid.com/rest/1.0/downloads/{download_id}"
-    response = requests.get(url, headers=HEADERS)
+    response = requests.get(f"https://api.real-debrid.com/rest/1.0/downloads/{download_id}", headers=HEADERS)
     response.raise_for_status()
     return response.json()
 
@@ -24,6 +22,10 @@ def download_file(file_info):
     if isinstance(file_info, list):
         for fi in file_info:
             download_file(fi)
+        return
+
+    if not isinstance(file_info, dict):
+        print(f"⚠️ Unexpected file_info type: {type(file_info)} - skipping")
         return
 
     filename = file_info.get("filename") or file_info.get("name") or "unknown"
@@ -51,15 +53,13 @@ def main():
     files = list_files()
 
     for f in files:
-        download_id = f.get("id") or f.get("download_id")
+        download_id = f.get("id")
         if not download_id:
             continue
         try:
             file_info = get_file_info(download_id)
-            if "files" in file_info:
-                download_file(file_info["files"])
-            else:
-                download_file(file_info)
+            print(f"DEBUG: file_info type: {type(file_info)}")  # Debug output to check type
+            download_file(file_info)
         except Exception as e:
             print(f"❌ Error with download {download_id}: {e}")
 
