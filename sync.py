@@ -1,38 +1,31 @@
 import os
 import requests
 
+# Your Real-Debrid API token from environment variable
 RD_TOKEN = os.getenv("RD_TOKEN")
+if not RD_TOKEN:
+    raise ValueError("Please set RD_TOKEN environment variable with your Real-Debrid API token.")
+
+# Where to save downloads
 DEST_DIR = "/downloads"
+os.makedirs(DEST_DIR, exist_ok=True)
 
 HEADERS = {
     "Authorization": f"Bearer {RD_TOKEN}"
 }
 
-def list_files():
-    response = requests.get("https://api.real-debrid.com/rest/1.0/downloads", headers=HEADERS)
-    response.raise_for_status()
-    return response.json()
+def list_downloads():
+    url = "https://api.real-debrid.com/rest/1.0/downloads"
+    resp = requests.get(url, headers=HEADERS)
+    resp.raise_for_status()
+    return resp.json()
 
-def get_file_info(download_id):
-    response = requests.get(f"https://api.real-debrid.com/rest/1.0/downloads/{download_id}", headers=HEADERS)
-    response.raise_for_status()
-    return response.json()
-
-def download_file(file_info):
-    if isinstance(file_info, list):
-        for fi in file_info:
-            download_file(fi)
-        return
-
-    if not isinstance(file_info, dict):
-        print(f"⚠️ Unexpected file_info type: {type(file_info)} - skipping")
-        return
-
-    filename = file_info.get("filename") or file_info.get("name") or "unknown"
-    url = file_info.get("streamingUrl") or file_info.get("download") or file_info.get("link")
+def download_file(download):
+    filename = download.get("filename", "unknown")
+    url = download.get("link")
 
     if not url:
-        print(f"⚠️ No URL found for {filename}")
+        print(f"⚠️ No download link for {filename}")
         return
 
     dest_path = os.path.join(DEST_DIR, filename)
@@ -40,28 +33,23 @@ def download_file(file_info):
         print(f"✅ Already downloaded: {filename}")
         return
 
-    print(f"⬇️ Downloading: {filename}")
+    print(f"⬇️ Downloading {filename} ...")
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         with open(dest_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
-    print(f"✔️ Saved to: {dest_path}")
+    print(f"✔️ Saved to {dest_path}")
 
 def main():
-    print("🔄 Syncing Real-Debrid cloud files...")
-    files = list_files()
+    print("🔄 Syncing Real-Debrid downloads...")
+    downloads = list_downloads()
 
-    for f in files:
-        download_id = f.get("id")
-        if not download_id:
-            continue
+    for download in downloads:
         try:
-            file_info = get_file_info(download_id)
-            print(f"DEBUG: file_info type: {type(file_info)}")  # Debug output to check type
-            download_file(file_info)
+            download_file(download)
         except Exception as e:
-            print(f"❌ Error with download {download_id}: {e}")
+            print(f"❌ Error downloading {download.get('filename', 'unknown')}: {e}")
 
 if __name__ == "__main__":
     main()
