@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   rd-sync:
-    image: yourusername/realdebrid-sync:latest
+    build: .
     environment:
       - RD_TOKEN=CX5MGXRZ73PRUUSSLDN3C4V4MNFRLNWXNIYTHXNNFEHPKKUKZMTQ
     volumes:
