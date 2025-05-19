@@ -1,15 +1,36 @@
+import os
+import requests
+
+RD_TOKEN = os.getenv("RD_TOKEN")
+DEST_DIR = "/downloads"
+
+HEADERS = {
+    "Authorization": f"Bearer {RD_TOKEN}"
+}
+
+def list_files():
+    url = "https://api.real-debrid.com/rest/1.0/downloads"
+    response = requests.get(url, headers=HEADERS)
+    response.raise_for_status()
+    return response.json()
+
+def get_file_info(download_id):
+    url = f"https://api.real-debrid.com/rest/1.0/downloads/{download_id}"
+    response = requests.get(url, headers=HEADERS)
+    response.raise_for_status()
+    return response.json()
+
 def download_file(file_info):
-    # if file_info is a list, download each file inside
     if isinstance(file_info, list):
         for fi in file_info:
             download_file(fi)
         return
 
-    filename = file_info.get("filename", "unknown")
-    url = file_info.get("streamingUrl") or file_info.get("download")
+    filename = file_info.get("filename") or file_info.get("name") or "unknown"
+    url = file_info.get("streamingUrl") or file_info.get("download") or file_info.get("link")
 
     if not url:
-        print(f"⚠️ No URL for {filename}")
+        print(f"⚠️ No URL found for {filename}")
         return
 
     dest_path = os.path.join(DEST_DIR, filename)
@@ -30,11 +51,17 @@ def main():
     files = list_files()
 
     for f in files:
-        download_id = f.get("id")
+        download_id = f.get("id") or f.get("download_id")
         if not download_id:
             continue
         try:
             file_info = get_file_info(download_id)
-            download_file(file_info)
+            if "files" in file_info:
+                download_file(file_info["files"])
+            else:
+                download_file(file_info)
         except Exception as e:
             print(f"❌ Error with download {download_id}: {e}")
+
+if __name__ == "__main__":
+    main()
