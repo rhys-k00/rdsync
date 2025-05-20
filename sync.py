@@ -1,6 +1,5 @@
 import os
 import requests
-import json
 
 RD_TOKEN = os.getenv("RD_TOKEN")
 if not RD_TOKEN:
@@ -17,25 +16,14 @@ def list_downloads():
     url = "https://api.real-debrid.com/rest/1.0/downloads"
     resp = requests.get(url, headers=HEADERS)
     resp.raise_for_status()
-    data = resp.json()
-    print("API response (list_downloads):")
-    print(json.dumps(data, indent=2))  # <-- This shows exactly what the API is sending back
-    return data
+    return resp.json()
 
 def download_file(download):
-    print("\nProcessing download entry:")
-    print(json.dumps(download, indent=2))
-
     filename = download.get("filename", "unknown")
-    links = download.get("links")
+    url = download.get("download") or download.get("link")
 
-    if not links or not isinstance(links, list):
-        print(f"⚠️ No valid 'links' list for {filename}")
-        return
-
-    url = links[0].get("link")
     if not url:
-        print(f"⚠️ No 'link' in first item of links for {filename}")
+        print(f"⚠️ No download link for {filename}")
         return
 
     dest_path = os.path.join(DEST_DIR, filename)
@@ -43,7 +31,7 @@ def download_file(download):
         print(f"✅ Already downloaded: {filename}")
         return
 
-    print(f"⬇️ Downloading {filename} from {url} ...")
+    print(f"⬇️ Downloading {filename} ...")
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         with open(dest_path, "wb") as f:
