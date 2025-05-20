@@ -4,9 +4,9 @@ services:
   rd-sync:
     build: .
     environment:
-      - RD_TOKEN=CX5MGXRZ73PRUUSSLDN3C4V4MNFRLNWXNIYTHXNNFEHPKKUKZMTQ
+      - RD_TOKEN=your_token_here
     volumes:
-      - /media:/downloads       # Host /media mounted to container /downloads
+      - /media/downloads:/media/downloads   # Host /media/downloads → Container /media/downloads
     restart: "no"
 
   samba:
