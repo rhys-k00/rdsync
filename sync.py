@@ -45,19 +45,26 @@ def main():
     print("🔄 Syncing Real-Debrid downloads...")
     downloads = list_downloads()
 
-    for download in downloads:
-        # If the download contains multiple files, loop through them
-        if "files" in download and isinstance(download["files"], list):
-            for file in download["files"]:
+    for item in downloads:
+        if isinstance(item, dict):
+            # If the item is a package with multiple files
+            if "files" in item and isinstance(item["files"], list):
+                for file in item["files"]:
+                    if isinstance(file, dict):
+                        try:
+                            download_file(file)
+                        except Exception as e:
+                            print(f"❌ Error downloading {file.get('filename', 'unknown')}: {e}")
+                    else:
+                        print(f"⚠️ Unexpected file format inside package: {file}")
+            else:
+                # Single file download
                 try:
-                    download_file(file)
+                    download_file(item)
                 except Exception as e:
-                    print(f"❌ Error downloading {file.get('filename', 'unknown')}: {e}")
+                    print(f"❌ Error downloading {item.get('filename', 'unknown')}: {e}")
         else:
-            try:
-                download_file(download)
-            except Exception as e:
-                print(f"❌ Error downloading {download.get('filename', 'unknown')}: {e}")
+            print(f"⚠️ Skipping unexpected item type: {type(item)}")
 
 if __name__ == "__main__":
     main()
