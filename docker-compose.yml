@@ -6,7 +6,7 @@ services:
     environment:
       - RD_TOKEN=CX5MGXRZ73PRUUSSLDN3C4V4MNFRLNWXNIYTHXNNFEHPKKUKZMTQ
     volumes:
-      - /media:/downloads    # <- Map host HDD mount to container /downloads
+      - /media:/downloads       # Host /media mounted to container /downloads for downloads
     restart: unless-stopped
 
   samba:
@@ -17,7 +17,7 @@ services:
       - "139:139"
       - "445:445"
     volumes:
-      - /media:/mount        # <- Map host HDD mount to container /mount
+      - /media:/mount          # Host /media mounted to container /mount
     command: >
-      -s "media;/mount;yes;no;yes"
+      -s "media;/mount;yes;no;yes"  # Share named 'media' pointing to /mount
       -u "guest;password"
