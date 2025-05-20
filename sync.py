@@ -36,26 +36,27 @@ def download_single_file(filename, url):
                 f.write(chunk)
     print(f"✔️ Saved to {dest_path}")
 
-def download_file(download):
-    # If 'files' key exists, it's a multi-file package
-    if "files" in download:
-        for file_entry in download["files"]:
-            download_file(file_entry)
+def process_download_item(item):
+    # If item is a list, process each element
+    if isinstance(item, list):
+        for subitem in item:
+            process_download_item(subitem)
+    # If item is a dict, check if it has 'files' (a list)
+    elif isinstance(item, dict):
+        if "files" in item and isinstance(item["files"], list):
+            for file_entry in item["files"]:
+                process_download_item(file_entry)
+        else:
+            filename = item.get("filename", "unknown")
+            url = item.get("link")
+            download_single_file(filename, url)
     else:
-        filename = download.get("filename", "unknown")
-        url = download.get("link")
-        download_single_file(filename, url)
+        print(f"⚠️ Skipping unknown item type: {type(item)}")
 
 def main():
-    print("🔄 Syncing Real-Debrid downloads...")
+    print("🔄 Syncing Real-Debrid cloud files...")
     downloads = list_downloads()
-    for download in downloads:
-        try:
-            download_file(download)
-        except Exception as e:
-            # If filename key exists, show it, else show ID or generic info
-            file_id = download.get("id", "unknown id")
-            print(f"❌ Error downloading {file_id}: {e}")
+    process_download_item(downloads)
 
 if __name__ == "__main__":
     main()
