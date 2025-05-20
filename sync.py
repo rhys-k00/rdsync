@@ -22,12 +22,22 @@ def list_downloads():
 
 def download_file(download):
     filename = download.get("filename", "unknown")
-    url = download.get("link")
+    link = download.get("link")
 
-    if not url:
+    if not link:
         print(f"⚠️ No download link for {filename}")
         return
 
+    # Handle if 'link' is a list of URLs
+    if isinstance(link, list):
+        for idx, single_link in enumerate(link, start=1):
+            file_suffix = f"_{idx}" if len(link) > 1 else ""
+            dest_filename = f"{filename}{file_suffix}"
+            download_single_file(dest_filename, single_link)
+    else:
+        download_single_file(filename, link)
+
+def download_single_file(filename, url):
     dest_path = os.path.join(DEST_DIR, filename)
     if os.path.exists(dest_path):
         print(f"✅ Already downloaded: {filename}")
