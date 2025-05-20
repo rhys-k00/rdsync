@@ -1,18 +1,14 @@
 import os
 import requests
 
-# Your Real-Debrid API token from environment variable
 RD_TOKEN = os.getenv("RD_TOKEN")
 if not RD_TOKEN:
     raise ValueError("Please set RD_TOKEN environment variable with your Real-Debrid API token.")
 
-# Change this to the mount point on your HDD
 DEST_DIR = "/media/downloads"
 os.makedirs(DEST_DIR, exist_ok=True)
 
-HEADERS = {
-    "Authorization": f"Bearer {RD_TOKEN}"
-}
+HEADERS = {"Authorization": f"Bearer {RD_TOKEN}"}
 
 def list_downloads():
     url = "https://api.real-debrid.com/rest/1.0/downloads"
@@ -23,7 +19,6 @@ def list_downloads():
 def download_file(download):
     filename = download.get("filename", "unknown")
     url = download.get("link")
-
     if not url:
         print(f"⚠️ No download link for {filename}")
         return
@@ -45,24 +40,18 @@ def main():
     print("🔄 Syncing Real-Debrid downloads...")
     downloads = list_downloads()
 
-    for item in downloads:
-        if isinstance(item, dict):
-            if "files" in item and isinstance(item["files"], list):
-                for file in item["files"]:
-                    if isinstance(file, dict):
-                        try:
-                            download_file(file)
-                        except Exception as e:
-                            print(f"❌ Error downloading {file.get('filename', 'unknown')}: {e}")
-                    else:
-                        print(f"⚠️ Unexpected file format inside package: {file}")
-            else:
-                try:
-                    download_file(item)
-                except Exception as e:
-                    print(f"❌ Error downloading {item.get('filename', 'unknown')}: {e}")
-        else:
-            print(f"⚠️ Skipping unexpected item type: {type(item)}")
+    # Debug print to see what downloads actually is
+    print(f"DEBUG: downloads is type {type(downloads)} with length {len(downloads)}")
+    for i, download in enumerate(downloads):
+        print(f"DEBUG: download[{i}] is type {type(download)}")
+        if not isinstance(download, dict):
+            print(f"❌ Error: download[{i}] is not a dict, it is {type(download)}. Here's the content:")
+            print(download)
+            continue
+        try:
+            download_file(download)
+        except Exception as e:
+            print(f"❌ Error downloading {download.get('filename', 'unknown')}: {e}")
 
 if __name__ == "__main__":
     main()
