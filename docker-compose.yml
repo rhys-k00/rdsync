@@ -1,10 +1,12 @@
+version: '3.8'
+
 services:
   rd-sync:
     build: .
     environment:
       - RD_TOKEN=CX5MGXRZ73PRUUSSLDN3C4V4MNFRLNWXNIYTHXNNFEHPKKUKZMTQ
     volumes:
-      - rd-downloads:/downloads
+      - /media:/downloads    # <- Map host HDD mount to container /downloads
     restart: unless-stopped
 
   samba:
@@ -15,10 +17,7 @@ services:
       - "139:139"
       - "445:445"
     volumes:
-      - rd-downloads:/mount
+      - /media:/mount        # <- Map host HDD mount to container /mount
     command: >
       -s "media;/mount;yes;no;yes"
       -u "guest;password"
-
-volumes:
-  rd-downloads:
