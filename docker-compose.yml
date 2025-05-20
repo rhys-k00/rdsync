@@ -7,7 +7,7 @@ services:
       - RD_TOKEN=CX5MGXRZ73PRUUSSLDN3C4V4MNFRLNWXNIYTHXNNFEHPKKUKZMTQ
     volumes:
       - /media:/downloads       # Host /media mounted to container /downloads
-    restart: unless-stopped
+    restart: "no"
 
   samba:
     image: dperson/samba
