@@ -20,7 +20,20 @@ def list_downloads():
     resp.raise_for_status()
     return resp.json()
 
-def download_single_file(filename, url):
+def download_file(download):
+    # If download is a list, recursively download each item
+    if isinstance(download, list):
+        for item in download:
+            download_file(item)
+        return
+
+    filename = download.get("filename", "unknown")
+    url = download.get("link")
+
+    if not url:
+        print(f"⚠️ No download link for {filename}")
+        return
+
     dest_path = os.path.join(DEST_DIR, filename)
     if os.path.exists(dest_path):
         print(f"✅ Already downloaded: {filename}")
@@ -34,46 +47,16 @@ def download_single_file(filename, url):
                 f.write(chunk)
     print(f"✔️ Saved to {dest_path}")
 
-def download_file(download):
-    # If download itself is a list, handle each element recursively
-    if isinstance(download, list):
-        for d in download:
-            download_file(d)
-        return
-
-    filename = download.get("filename", "unknown")
-    link = download.get("link")
-
-    if not link:
-        print(f"⚠️ No download link for {filename}")
-        return
-
-    # If link is a list of URLs, download each one with suffixes
-    if isinstance(link, list):
-        for idx, single_link in enumerate(link, start=1):
-            file_suffix = f"_{idx}" if len(link) > 1 else ""
-            dest_filename = f"{filename}{file_suffix}"
-            download_single_file(dest_filename, single_link)
-    else:
-        download_single_file(filename, link)
-
 def main():
     print("🔄 Syncing Real-Debrid downloads...")
     downloads = list_downloads()
 
-    for idx, download in enumerate(downloads):
-        print(f"\n--- Download {idx} type: {type(download)} ---")
-        if isinstance(download, list):
-            print("It's a list! Content sample:", download[:2])
-        else:
-            print("It's a dict! Keys:", list(download.keys()))
-
+    for download in downloads:
         try:
             download_file(download)
         except Exception as e:
-            # Defensive fallback to print something meaningful
-            name = download if isinstance(download, str) else download.get("filename", "unknown")
-            print(f"❌ Error downloading {name}: {e}")
+            # Use repr(download) to help debug which item caused error
+            print(f"❌ Error downloading {repr(download)}: {e}")
 
 if __name__ == "__main__":
     main()
