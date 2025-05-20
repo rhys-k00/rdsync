@@ -18,14 +18,7 @@ def list_downloads():
     resp.raise_for_status()
     return resp.json()
 
-def download_file(download):
-    if isinstance(download, list):
-        for item in download:
-            download_file(item)
-        return
-
-    filename = download.get("filename", "unknown")
-    url = download.get("link")
+def download_single_file(filename, url):
     if not url:
         print(f"⚠️ No download link for {filename}")
         return
@@ -43,6 +36,16 @@ def download_file(download):
                 f.write(chunk)
     print(f"✔️ Saved to {dest_path}")
 
+def download_file(download):
+    # If 'files' key exists, it's a multi-file package
+    if "files" in download:
+        for file_entry in download["files"]:
+            download_file(file_entry)
+    else:
+        filename = download.get("filename", "unknown")
+        url = download.get("link")
+        download_single_file(filename, url)
+
 def main():
     print("🔄 Syncing Real-Debrid downloads...")
     downloads = list_downloads()
@@ -50,7 +53,9 @@ def main():
         try:
             download_file(download)
         except Exception as e:
-            print(f"❌ Error downloading {download}: {e}")
+            # If filename key exists, show it, else show ID or generic info
+            file_id = download.get("id", "unknown id")
+            print(f"❌ Error downloading {file_id}: {e}")
 
 if __name__ == "__main__":
     main()
