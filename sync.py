@@ -1,12 +1,10 @@
 import os
 import requests
 
-# Your Real-Debrid API token from environment variable
 RD_TOKEN = os.getenv("RD_TOKEN")
 if not RD_TOKEN:
     raise ValueError("Please set RD_TOKEN environment variable with your Real-Debrid API token.")
 
-# Where to save downloads
 DEST_DIR = "/downloads"
 os.makedirs(DEST_DIR, exist_ok=True)
 
@@ -21,7 +19,6 @@ def list_downloads():
     return resp.json()
 
 def download_file(download):
-    # If download is a list, recursively download each item
     if isinstance(download, list):
         for item in download:
             download_file(item)
@@ -29,7 +26,6 @@ def download_file(download):
 
     filename = download.get("filename", "unknown")
     url = download.get("link")
-
     if not url:
         print(f"⚠️ No download link for {filename}")
         return
@@ -50,13 +46,11 @@ def download_file(download):
 def main():
     print("🔄 Syncing Real-Debrid downloads...")
     downloads = list_downloads()
-
     for download in downloads:
         try:
             download_file(download)
         except Exception as e:
-            # Use repr(download) to help debug which item caused error
-            print(f"❌ Error downloading {repr(download)}: {e}")
+            print(f"❌ Error downloading {download}: {e}")
 
 if __name__ == "__main__":
     main()
