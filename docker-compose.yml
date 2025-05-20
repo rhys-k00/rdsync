@@ -2,7 +2,7 @@ services:
   rd-sync:
     build: .
     environment:
-      - RD_TOKEN=your_token_here
+      - RD_TOKEN=CX5MGXRZ73PRUUSSLDN3C4V4MNFRLNWXNIYTHXNNFEHPKKUKZMTQ
     volumes:
       - /media/downloads:/media/downloads   # Host /media/downloads → Container /media/downloads
     restart: "no"
