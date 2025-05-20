@@ -5,10 +5,12 @@ RD_TOKEN = os.getenv("RD_TOKEN")
 if not RD_TOKEN:
     raise ValueError("Please set RD_TOKEN environment variable with your Real-Debrid API token.")
 
-DEST_DIR = "/media/downloads"
+DEST_DIR = "/media/downloads"  # Change to your mounted HDD path
 os.makedirs(DEST_DIR, exist_ok=True)
 
-HEADERS = {"Authorization": f"Bearer {RD_TOKEN}"}
+HEADERS = {
+    "Authorization": f"Bearer {RD_TOKEN}"
+}
 
 def list_downloads():
     url = "https://api.real-debrid.com/rest/1.0/downloads"
@@ -18,7 +20,13 @@ def list_downloads():
 
 def download_file(download):
     filename = download.get("filename", "unknown")
-    url = download.get("link")
+
+    links = download.get("links")
+    if not links or not isinstance(links, list):
+        print(f"⚠️ No links available for {filename}")
+        return
+
+    url = links[0].get("link")
     if not url:
         print(f"⚠️ No download link for {filename}")
         return
@@ -40,14 +48,7 @@ def main():
     print("🔄 Syncing Real-Debrid downloads...")
     downloads = list_downloads()
 
-    # Debug print to see what downloads actually is
-    print(f"DEBUG: downloads is type {type(downloads)} with length {len(downloads)}")
-    for i, download in enumerate(downloads):
-        print(f"DEBUG: download[{i}] is type {type(download)}")
-        if not isinstance(download, dict):
-            print(f"❌ Error: download[{i}] is not a dict, it is {type(download)}. Here's the content:")
-            print(download)
-            continue
+    for download in downloads:
         try:
             download_file(download)
         except Exception as e:
