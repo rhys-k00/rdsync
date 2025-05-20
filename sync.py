@@ -6,8 +6,8 @@ RD_TOKEN = os.getenv("RD_TOKEN")
 if not RD_TOKEN:
     raise ValueError("Please set RD_TOKEN environment variable with your Real-Debrid API token.")
 
-# Where to save downloads
-DEST_DIR = "/downloads"
+# Change this to the mount point on your HDD
+DEST_DIR = "/media/downloads"
 os.makedirs(DEST_DIR, exist_ok=True)
 
 HEADERS = {
@@ -47,7 +47,6 @@ def main():
 
     for item in downloads:
         if isinstance(item, dict):
-            # If the item is a package with multiple files
             if "files" in item and isinstance(item["files"], list):
                 for file in item["files"]:
                     if isinstance(file, dict):
@@ -58,7 +57,6 @@ def main():
                     else:
                         print(f"⚠️ Unexpected file format inside package: {file}")
             else:
-                # Single file download
                 try:
                     download_file(item)
                 except Exception as e:
