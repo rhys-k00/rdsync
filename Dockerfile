@@ -6,8 +6,10 @@ COPY sync.py .
 
 RUN pip install requests
 
-# Install cron
-RUN apt-get update && apt-get install -y cron
+# Install cron and ffmpeg
+RUN apt-get update && \
+    apt-get install -y cron ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
 
 # Make sure the script is executable (optional)
 RUN chmod +x /app/sync.py
