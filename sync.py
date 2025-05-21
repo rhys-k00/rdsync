@@ -1,6 +1,7 @@
 import os
 import requests
 import subprocess
+import sys
 
 RD_TOKEN = os.getenv("RD_TOKEN")
 if not RD_TOKEN:
@@ -40,6 +41,8 @@ def convert_to_720p(input_path):
         "ffmpeg",
         "-i", input_path,
         "-vf", "scale=w=1280:h=720:force_original_aspect_ratio=decrease",
+        "-preset", "ultrafast",
+        "-crf", "28",
         "-c:a", "copy",
         output_path
     ]
@@ -67,12 +70,16 @@ def download_file(download):
     dest_path = os.path.join(DEST_DIR, filename)
 
     print(f"⬇️ Downloading {filename} ...")
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(dest_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
-    print(f"✔️ Saved to {dest_path}")
+    try:
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(dest_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        print(f"✔️ Saved to {dest_path}")
+    except Exception as e:
+        print(f"❌ Failed to download {filename}: {e}")
+        return
 
     # Convert after successful download
     success = convert_to_720p(dest_path)
