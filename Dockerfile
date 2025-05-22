@@ -19,4 +19,4 @@ RUN apt-get update && \
 VOLUME ["/downloads"]
 
 # Run cron and forward logs
-CMD ["sh", "-c", "cron && tail -f /var/log/cron.log"]
+CMD ["sh", "-c", "touch /var/log/cron.log && cron && tail -f /var/log/cron.log"]
